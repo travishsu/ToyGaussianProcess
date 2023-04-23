@@ -14,7 +14,9 @@ class GaussianProcessRegression(nn.Module):
         self.observation_noise = nn.Parameter(torch.tensor(1.0))
 
     def kernel(self, x1, x2):
-        """RBFSquaredExponential kernel"""
+        """RBFSquaredExponential kernel
+        k(x1, x2) = sigma^2 * exp(-0.5 * (x1 - x2)^2 / l^2)
+        """
         diff = x1 - x2
         return self.signal_variance * torch.exp(-0.5 * diff ** 2 / self.lengthscale ** 2)
 
@@ -37,14 +39,21 @@ class GaussianProcessRegression(nn.Module):
                 print(f"iter {iter}: loss = {loss.item()}, lengthscale = {self.lengthscale.item()}, signal_variance = {self.signal_variance.item()}, observation_noise = {self.observation_noise.item()}")
 
     def loss_func(self):
-        """Negative log-likelihood"""
+        """Negative log-likelihood
+        max_{theta} log p(y | x, theta)
+        where
+        log p(y | x, theta) = -0.5 * logdet(K + sigma^2 I) - 0.5 * y^T K^{-1} y - 0.5 * n * log(2 * pi)
+        """
+
         first_term = 0.5 * torch.logdet(self.K + self.observation_noise * torch.eye(self.K.shape[0]))
         second_term = 0.5 * self.y @ torch.inverse(self.K + self.observation_noise * torch.eye(self.K.shape[0])) @ self.y
         third_term = 0.5 * self.y.numel() * torch.log(2 * torch.tensor(np.pi))
         return first_term + second_term + third_term
 
     def predict(self, x_star):
-        """Predict the mean and variance at x_star"""
+        """Predict the mean and variance at x_star
+        mean(y_star) = k(x_star, x) K(x, x)^{-1} y
+        """
         k_star = self.kernel(x_star.unsqueeze(-1), self.x.unsqueeze(-2))
         k_star_star = self.kernel(x_star.unsqueeze(-1), x_star.unsqueeze(-2))
 
