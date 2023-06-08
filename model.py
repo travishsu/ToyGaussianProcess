@@ -37,7 +37,7 @@ class GaussianProcessRegression(nn.Module):
         self.x = x
         self.y = y
 
-        optimizer = torch.optim.AdamW(self.parameters(), lr=lr)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=lr, weight_decay=1e-1)
         for iter in range(n_iter):
             optimizer.zero_grad()
             # Compute the kernel matrix
