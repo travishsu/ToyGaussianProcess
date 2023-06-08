@@ -12,15 +12,15 @@ class GaussianProcessRegression(nn.Module):
         self.log_lengthscale = nn.Parameter(torch.tensor(0.0))
         self.log_signal_variance = nn.Parameter(torch.tensor(0.0))
         self.log_observation_noise = nn.Parameter(torch.tensor(0.0))
-        
+
     @property
     def lengthscale(self):
         return torch.exp(self.log_lengthscale)
-    
+
     @property
     def signal_variance(self):
         return torch.exp(self.log_signal_variance)
-    
+
     @property
     def observation_noise(self):
         return torch.exp(self.log_observation_noise)
